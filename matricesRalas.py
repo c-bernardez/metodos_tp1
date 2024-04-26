@@ -148,7 +148,7 @@ class MatrizRala:
                     return
                 nodo_anterior = nodo_actual
                 nodo_actual = nodo_actual.siguiente
-            fila.insertarDespuesDeNodo((n, v), nodo_anterior) #si se termina la lista, se inserta al final
+            fila.push((n, v)) #si se termina la lista, se inserta al final
         else:
             # Si la fila no existe, crea una nueva fila con un solo nodo
             nueva_fila = ListaEnlazada()
@@ -156,18 +156,56 @@ class MatrizRala:
             self.filas[m] = nueva_fila
 
     def __mul__( self, k ):
-        # COMPLETAR:
         # Esta funcion implementa el producto matriz-escalar -> A * k
-        pass
+        resultado = MatrizRala(*self.shape)
+        
+        # Recorrer cada elemento de la matriz actual
+        for fila, lista_enlazada in self.filas.items():
+            nodo_actual = lista_enlazada.raiz
+            while nodo_actual is not None:
+                columna, valor = nodo_actual.valor
+                # Multiplicar el valor por el escalar k y asignarlo en la nueva matriz
+                resultado.__setitem__((fila, columna), valor * k)
+                nodo_actual = nodo_actual.siguiente
+                
+        return resultado
     
     def __rmul__( self, k ):
         # Esta funcion implementa el producto escalar-matriz -> k * A
         return self * k
 
     def __add__( self, other ):
-        # COMPLETAR:
         # Esta funcion implementa la suma de matrices -> A + B
-        pass
+        if self.shape != other.shape:
+            raise ValueError("Las matrices deben tener la misma forma para poder sumarlas")
+        
+        resultado = MatrizRala(*self.shape)  # Crear una nueva matriz para almacenar el resultado
+
+        for m, fila in self.filas.items():
+            # Iterar sobre los elementos de la fila
+            nodo_actual = fila.raiz
+            while nodo_actual is not None:
+                n, valor = nodo_actual.valor
+                # Si la fila m también existe en other y el elemento n también existe en other[m]
+                if m in other.filas:
+                    nodoB = other.filas[m]
+                    if nodoB is not None:
+                        nodoB.nodoPorCondicion(lambda nodo: nodo.valor[0] == n)
+                        if nodoB:
+                    # Suma los elementos correspondientes de ambas matrices
+                            resultado.__setitem__((m, n), valor + other.__getitem__((m, n)))
+                else:
+                    # Si el elemento no existe en other, simplemente copia el valor de self a result
+                     resultado.__setitem__((m, n), valor)
+                nodo_actual = nodo_actual.siguiente
+                
+    
+        # Iterar sobre las filas de la matriz other para agregar elementos que no están en la matriz self
+        for m, fila in other.filas.items():
+            if m not in self.filas:
+                resultado.filas[m] = fila  # Copia la fila completa desde other a result 
+    
+        return resultado
     
     def __sub__( self, other ):
         # COMPLETAR:

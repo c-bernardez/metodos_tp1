@@ -38,40 +38,40 @@ class TestIndexacionMatrices:
 
         assert A[1,0] == 3
 
-# class TestSumaMatrices:
-#     def test_distintasDimensiones( self ):
-#         A = MatrizRala(2,3)
-#         B = MatrizRala(3,3)
-#         with pytest.raises(Exception) as e_info:
-#             C = A + B
+class TestSumaMatrices:
+    def test_distintasDimensiones( self ):
+        A = MatrizRala(2,3)
+        B = MatrizRala(3,3)
+        with pytest.raises(Exception) as e_info:
+            C = A + B
         
-#     def test_sumaCorrectamente( self ):
-#         A = MatrizRala(3,3)
-#         B = MatrizRala(3,3)
+    def test_sumaCorrectamente( self ):
+        A = MatrizRala(3,3)
+        B = MatrizRala(3,3)
 
-#         A[0,0]=1
-#         A[0,2]=3
-#         A[2,2]=4
+        A[0,0]=1
+        A[0,2]=3
+        A[2,2]=4
 
-#         B[0,2]=3
-#         B[1,1]=2
+        B[0,2]=3
+        B[1,1]=2
 
-#         C = A+B
+        C = A+B
 #         D = A-B
-#         assert C[0,0] == 1 and C[0,2] == 6 and C[2,2] == 4 and C[1,1] == 2
+        assert C[0,0] == 1 and C[0,2] == 6 and C[2,2] == 4 and C[1,1] == 2
 #         assert D[0,0] == 1 and D[0,2] == 0 and D[2,2] == 4 and D[1,1] == -2
 
-# class TestProductoPorEscalar:
-#     def test_escalaCorrectamente( self ):
-#         A = MatrizRala(3,3)
-#         A[0,0]=1
-#         A[0,2]=3
-#         A[2,2]=4
+class TestProductoPorEscalar:
+    def test_escalaCorrectamente( self ):
+        A = MatrizRala(3,3)
+        A[0,0]=1
+        A[0,2]=3
+        A[2,2]=4
 
-#         C = A * 13
-#         D = 13 * A
-#         assert C[0,0] == (1*13) and C[0,2] == (3*13) and C[2,2] == (4*13)
-#         assert D[0,0] == (1*13) and D[0,2] == (3*13) and D[2,2] == (4*13)
+        C = A * 13
+        D = 13 * A
+        assert C[0,0] == (1*13) and C[0,2] == (3*13) and C[2,2] == (4*13)
+        assert D[0,0] == (1*13) and D[0,2] == (3*13) and D[2,2] == (4*13)
 
 # class TestProductoMatricial:
 #     def test_dimensionesEquivocadas(self):
