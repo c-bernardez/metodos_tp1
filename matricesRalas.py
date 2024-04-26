@@ -101,22 +101,6 @@ class MatrizRala:
         self.filas = {} #diccionario con filas como clave
         self.shape = (M, N)
 
-    # def __getitem__( self, Idx ):
-    #     # Esta funcion implementa la indexacion ( Idx es una tupla (m,n) ) -> A[m,n]
-    #     m, n = Idx
-    #     if m in self.filas: #busca si la fila m es clave en el diccionario
-    #         fila = self.filas[m] #'fila' es la lista enlazada para la fila m
-    #         nodo_actual = fila.raiz
-    #         while nodo_actual is not None:
-    #             columna, valor = nodo_actual.valor #extrae c, n de la tupla contenida en (valor)
-    #             if columna == n: 
-    #                 return valor  
-    #             elif columna > n:
-    #                 break  
-    #             elif columna < n:
-    #                 nodo_actual = nodo_actual.siguiente
-    #     return 0  
-
     def __getitem__(self, Idx):
         # Esta funcion implementa la indexacion ( Idx es una tupla (m,n) ) -> A[m,n]
         m, n = Idx
@@ -206,10 +190,27 @@ class MatrizRala:
         return resultado
     
     def __matmul__( self, other ):
-        # COMPLETAR:
         # Esta funcion implementa el producto matricial (notado en Python con el operador "@" ) -> A @ B
-        pass                
+        if self.shape[1] != other.shape[0]: # cant col A debe ser igual a cant fila B
+            raise ValueError("Las dimensiones de las matrices no son compatibles para la multiplicación matricial")
 
+        # Crear una nueva instancia de la matriz resultante
+        resultado = MatrizRala(self.shape[0], other.shape[1])       
+
+        # Iterar sobre las filas de la matriz self
+        for i in range(self.shape[0]):
+            # Iterar sobre las columnas de la matriz other
+            for j in range(other.shape[1]):
+                # Calcular el valor del elemento (i, j) en la matriz resultante
+                valor = 0
+                for k in range(self.shape[1]): 
+                    valor += self.__getitem__((i, k)) * other.__getitem__((k, j))
+                    print(i, j, self.__getitem__((i, k)) , other.__getitem__((k, j)))
+
+                # Asignar el valor calculado al elemento (i, j) en la matriz resultante
+                resultado.__setitem__((i, j), valor)
+
+        return resultado
         
     def __repr__( self ):
         res = 'MatrizRala([ \n'
@@ -229,15 +230,18 @@ def GaussJordan( A, b ):
     # Devolver error si el sistema no tiene solucion o tiene infinitas soluciones, con el mensaje apropiado
     pass
 
-A = MatrizRala(3,3)
-B = MatrizRala(3,3)
 
-A[0,0]=1
-A[0,2]=3
-A[2,2]=4
+A = MatrizRala(2, 3)
+B = MatrizRala(3, 2)
 
-B[0,2]=3
-B[1,1]=2
-print(A,B)
-C = A+B
+A[0, 0] = 1
+A[0, 1] = 2
+A[1, 2] = 3
+
+B[0, 1] = 4
+B[1, 0] = 5
+
+C = A @ B
+print(A)
+print(B)
 print(C)

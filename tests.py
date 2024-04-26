@@ -182,43 +182,77 @@ class TestProductoPorEscalar:
         D = (1/2) * A
         assert D[0,0] == 2 and D[0,2] == 4 and D[2,2] == 5
 
-# class TestProductoMatricial:
-#     def test_dimensionesEquivocadas(self):
-#         A = MatrizRala(2,3)
-#         B = MatrizRala(4,3)
-#         with pytest.raises(Exception) as e_info:
-#             C = A @ B
+class TestProductoMatricial:
+    def test_dimensionesEquivocadas(self):
+        A = MatrizRala(2,3)
+        B = MatrizRala(4,3)
+        with pytest.raises(Exception) as e_info:
+            C = A @ B
 
-#     def test_productoAndaBien(self):
-#         A = MatrizRala(2,3)
-#         B = MatrizRala(3,3)
+    def test_productoAndaBien(self):
+        A = MatrizRala(2,3)
+        B = MatrizRala(3,3)
 
-#         A[0,0]=1
-#         A[0,2]=3
-#         A[1,2]=4
+        A[0,0]=1
+        A[0,2]=3
+        A[1,2]=4
 
-#         B[2,0]=3
-#         B[1,1]=2
+        B[2,0]=3
+        B[1,1]=2
 
-#         C = A @ B
+        C = A @ B
 
-#         assert C.shape[0] == 2 and C.shape[1]==3 and C[0,0] == 9 and all( [C[i,i] == 0 for i in range(3) for j in range(4) if (i!=j and i!=0)] )
+        assert C.shape[0] == 2 and C.shape[1]==3 and C[0,0] == 9 and all( [C[i,i] == 0 for i in range(3) for j in range(4) if (i!=j and i!=0)] )
 
-#     def test_productoPorIdentidad( self ):
-#         A = MatrizRala(3,3)
-#         Id = MatrizRala(3,3)
+    def test_productoPorIdentidad( self ):
+        A = MatrizRala(3,3)
+        Id = MatrizRala(3,3)
 
-#         A[0,0]=1
-#         A[0,2]=3
-#         A[1,2]=4
+        A[0,0]=1
+        A[0,2]=3
+        A[1,2]=4
 
-#         Id[0,0] = 1
-#         Id[1,1] = 1
-#         Id[2,2] = 1
+        Id[0,0] = 1
+        Id[1,1] = 1
+        Id[2,2] = 1
 
-#         C1 = A @ Id
-#         C2 = Id @ A
-#         assert C1[0,0] == 1 and C1[0,2] == 3 and C1[1,2] == 4 and C2[0,0] == 1 and C2[0,2] == 3 and C2[1,2] == 4 and C1.shape == C2.shape and C1.shape == A.shape
+        C1 = A @ Id
+        C2 = Id @ A
+        assert C1[0,0] == 1 and C1[0,2] == 3 and C1[1,2] == 4 and C2[0,0] == 1 and C2[0,2] == 3 and C2[1,2] == 4 and C1.shape == C2.shape and C1.shape == A.shape
+
+    def test_productoPorNegativos(self):
+        A = MatrizRala(2, 3)
+        B = MatrizRala(3, 2)
+
+        A[0, 0] = 1
+        A[0, 1] = -2
+        A[1, 1] = 3
+
+        B[0, 0] = -1
+        B[1, 1] = 2
+        B[2, 1] = -3
+
+        C = A @ B
+
+        assert C.shape == (2, 2)
+        assert C[0, 0] == -1 and C[0, 1] == -4 and C[1, 0] == 0 and C[1, 1] == 6
+
+    def test_productoPorCeros(self):
+        A = MatrizRala(2, 3)
+        B = MatrizRala(3, 2)
+
+        A[0, 0] = 1
+        A[0, 1] = 2
+        A[1, 2] = 3
+
+        B[0, 1] = 4
+        B[1, 0] = 5
+
+        C = A @ B
+
+        assert C.shape == (2, 2)
+
+        assert C[0, 0] == 10 and C[0, 1] == 4 and C[1, 0] == 0 and C[1, 1] == 0
 
 # class testGaussJordan:
 #     def test_GaussJordan( self ):
