@@ -9,7 +9,7 @@ import numpy as np
 class TestIndexacionMatrices:
     def test_indexarCeros( self ):
         A = MatrizRala(3,3)
-        
+
         assert np.allclose( np.zeros(9), [A[i,j] for i in range(3) for j in range(3)] )
 
     def test_asignarValor( self ):
@@ -20,7 +20,6 @@ class TestIndexacionMatrices:
 
     def test_asignarDejaCeros(self):
         A = MatrizRala(3,3)
-        A[0,0] = 1
 
         assert np.allclose( np.zeros(9), [A[i,j] if (i != j and i != 0) else 0 for i in range(3) for j in range(3)] )
 
@@ -57,9 +56,9 @@ class TestSumaMatrices:
         B[1,1]=2
 
         C = A+B
-#         D = A-B
+        D = A-B
         assert C[0,0] == 1 and C[0,2] == 6 and C[2,2] == 4 and C[1,1] == 2
-#         assert D[0,0] == 1 and D[0,2] == 0 and D[2,2] == 4 and D[1,1] == -2
+        assert D[0,0] == 1 and D[0,2] == 0 and D[2,2] == 4 and D[1,1] == -2
 
 class TestProductoPorEscalar:
     def test_escalaCorrectamente( self ):

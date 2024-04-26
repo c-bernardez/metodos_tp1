@@ -118,13 +118,16 @@ class MatrizRala:
     #     return 0  
 
     def __getitem__(self, Idx):
-    # Esta funcion implementa la indexacion ( Idx es una tupla (m,n) ) -> A[m,n]
+        # Esta funcion implementa la indexacion ( Idx es una tupla (m,n) ) -> A[m,n]
         m, n = Idx
-        if m in self.filas: #busca si la fila m es clave en el diccionario
-            fila = self.filas[m] #'fila' es la lista enlazada para la fila m
-            nodo_actual = fila.nodoPorCondicion(lambda nodo: nodo.valor[0] == n)
-            if nodo_actual:
-                return nodo_actual.valor[1]
+        if m in self.filas: 
+            fila = self.filas[m]
+            nodo_actual = fila.raiz
+            while nodo_actual is not None:
+                columna, valor = nodo_actual.valor
+                if columna == n:
+                    return valor
+                nodo_actual = nodo_actual.siguiente
         return 0
 
         
@@ -183,34 +186,25 @@ class MatrizRala:
 
         for m, fila in self.filas.items():
             # Iterar sobre los elementos de la fila
-            nodo_actual = fila.raiz
-            while nodo_actual is not None:
-                n, valor = nodo_actual.valor
-                # Si la fila m también existe en other y el elemento n también existe en other[m]
-                if m in other.filas:
-                    nodoB = other.filas[m]
-                    if nodoB is not None:
-                        nodoB.nodoPorCondicion(lambda nodo: nodo.valor[0] == n)
-                        if nodoB:
-                    # Suma los elementos correspondientes de ambas matrices
-                            resultado.__setitem__((m, n), valor + other.__getitem__((m, n)))
-                else:
-                    # Si el elemento no existe en other, simplemente copia el valor de self a result
-                     resultado.__setitem__((m, n), valor)
-                nodo_actual = nodo_actual.siguiente
-                
-    
-        # Iterar sobre las filas de la matriz other para agregar elementos que no están en la matriz self
+            for n in range(self.shape[0]):
+                nodo_enA = self.__getitem__((m, n))
+                nodo_enB = other.__getitem__((m,n))
+                resultado.__setitem__((m,n), nodo_enA + nodo_enB)
+
+        #Iterar sobre las filas de la matriz other para agregar elementos que no están en la matriz self
         for m, fila in other.filas.items():
             if m not in self.filas:
-                resultado.filas[m] = fila  # Copia la fila completa desde other a result 
+                for n in range(self.shape[0]):
+                    resultado.filas[m] = fila  # Copia la fila completa desde other a result 
     
         return resultado
     
     def __sub__( self, other ):
-        # COMPLETAR:
         # Esta funcion implementa la resta de matrices (pueden usar suma y producto) -> A - B
-        pass
+        #restar es sumar la inversa
+        negative_other = other.__mul__(-1)
+        resultado = self.__add__(negative_other)
+        return resultado
     
     def __matmul__( self, other ):
         # COMPLETAR:
@@ -236,7 +230,15 @@ def GaussJordan( A, b ):
     # Devolver error si el sistema no tiene solucion o tiene infinitas soluciones, con el mensaje apropiado
     pass
 
+A = MatrizRala(3,3)
+B = MatrizRala(3,3)
 
+A[0,0]=1
+A[0,2]=3
+A[2,2]=4
 
-
-
+B[0,2]=3
+B[1,1]=2
+print(A,B)
+C = A+B
+print(C)
