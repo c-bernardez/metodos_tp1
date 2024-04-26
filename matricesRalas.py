@@ -194,8 +194,7 @@ class MatrizRala:
         #Iterar sobre las filas de la matriz other para agregar elementos que no están en la matriz self
         for m, fila in other.filas.items():
             if m not in self.filas:
-                for n in range(self.shape[0]):
-                    resultado.filas[m] = fila  # Copia la fila completa desde other a result 
+                resultado.filas[m] = fila  # Copia la fila completa desde other a result 
     
         return resultado
     

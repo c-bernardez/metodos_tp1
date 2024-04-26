@@ -56,9 +56,94 @@ class TestSumaMatrices:
         B[1,1]=2
 
         C = A+B
-        D = A-B
         assert C[0,0] == 1 and C[0,2] == 6 and C[2,2] == 4 and C[1,1] == 2
-        assert D[0,0] == 1 and D[0,2] == 0 and D[2,2] == 4 and D[1,1] == -2
+
+    def test_sumarMismaMatriz(self):
+        A = MatrizRala(3,3)
+
+        A[0,0]=1
+        A[0,2]=3
+        A[2,2]=4
+
+        C = A + A
+        assert C[0,0] == 2 and C[0,2] == 6 and C[2,2] == 8 
+
+    def test_sumarMatrizCeros(self):
+        A = MatrizRala(3,3)
+        B = MatrizRala(3,3)
+
+        A[0,0] = 10
+        A[0,1] = 20
+        A[0,2] = 30
+
+        B[0,0] = 0
+        B[0,1] = 0
+        B[0,2] = 0
+
+        C = A + B
+        assert C[0,0] == 10 and C[0,1] == 20 and C[0,2] == 30
+
+    def test_sumarMatrizNegativos(self):
+        A = MatrizRala(3,3)
+        B = MatrizRala(3,3)
+
+        A[0,0] = 10
+        A[0,1] = 20
+        A[0,2] = 30
+
+        B[0,0] = -10
+        B[0,1] = -20
+        B[0,2] = -30
+
+        C = A + B
+        assert C[0,0] == 0 and C[0,1] == 0 and C[0,2] == 0
+
+class TestResta:
+
+    def test_restarDistintasDimensiones( self ):
+        A = MatrizRala(2,3)
+        B = MatrizRala(3,3)
+        with pytest.raises(Exception) as e_info:
+            C = A - B
+
+    def test_restaCorrectamente(self):
+        A = MatrizRala(2,2)
+        B = MatrizRala(2,2)
+        A[0,0] = 5
+        A[0,1] = 10
+        A[1,0] = 15
+        A[1,1] = 20
+
+        B[0,0] = 5
+        B[0,1] = 1
+        B[1,0] = 0
+        B[1,1] = 28
+
+        C = A - B
+        assert C[0,0] == 0 and C[0,1] == 9 and C[1,0] == 15 and C[1,1] == -8
+
+    def test_restaCeros(self):
+        A = MatrizRala(2,2)
+        B = MatrizRala(2,2)
+        A[0,0] = 5
+        A[0,1] = 10
+        A[1,0] = 15
+        A[1,1] = 20
+
+        C = A - B
+        assert C[0,0] == 5 and C[0,1] == 10 and C[1,0] == 15 and C[1,1] == 20
+
+    def test_restaMismaMatriz(self):
+        A = MatrizRala(2,2)
+    
+        A[0,0] = 5
+        A[0,1] = 10
+        A[1,0] = 15
+        A[1,1] = 20
+
+        C = A - A
+        assert C[0,0] == 0 and C[0,1] == 0 and C[1,0] == 0 and C[1,1] == 0
+
 
 class TestProductoPorEscalar:
     def test_escalaCorrectamente( self ):
@@ -68,9 +153,34 @@ class TestProductoPorEscalar:
         A[2,2]=4
 
         C = A * 13
-        D = 13 * A
         assert C[0,0] == (1*13) and C[0,2] == (3*13) and C[2,2] == (4*13)
-        assert D[0,0] == (1*13) and D[0,2] == (3*13) and D[2,2] == (4*13)
+
+    def test_multiplicar_por_cero(self):
+        A = MatrizRala(3,3)
+        A[0,0]=1
+        A[0,2]=5
+        A[2,2]=9
+
+        C = A * 0
+        assert C[0,0] == 0 and C[0,2] == 0 and C[2,2] == 0
+
+    def test_multiplicar_por_fraccion(self):
+        A = MatrizRala(3,3)
+        A[0,0]=4
+        A[0,2]=8
+        A[2,2]=10
+
+        C = A * (1/2)
+        assert C[0,0] == 2 and C[0,2] == 4 and C[2,2] == 5
+
+    def test_r_mul(self):
+        A = MatrizRala(3,3)
+        A[0,0]=4
+        A[0,2]=8
+        A[2,2]=10
+        
+        D = (1/2) * A
+        assert D[0,0] == 2 and D[0,2] == 4 and D[2,2] == 5
 
 # class TestProductoMatricial:
 #     def test_dimensionesEquivocadas(self):
