@@ -1,5 +1,6 @@
 # IMPORTANTE: Para importar estas clases en otro archivo (que se encuentre en la misma carpeta), escribir:
 # from matricesRalas import MatrizRala, GaussJordan 
+import numpy as np
 
 class ListaEnlazada:
     def __init__( self ):
@@ -205,7 +206,7 @@ class MatrizRala:
                 valor = 0
                 for k in range(self.shape[1]): 
                     valor += self.__getitem__((i, k)) * other.__getitem__((k, j))
-                    print(i, j, self.__getitem__((i, k)) , other.__getitem__((k, j)))
+                    #print(i, j, self.__getitem__((i, k)) , other.__getitem__((k, j)))
 
                 # Asignar el valor calculado al elemento (i, j) en la matriz resultante
                 resultado.__setitem__((i, j), valor)
@@ -217,7 +218,7 @@ class MatrizRala:
         for i in range( self.shape[0] ):
             res += '    [ '
             for j in range( self.shape[1] ):
-                res += str(self[i,j]) + ' '
+                res += str(round(self[i,j],5)) + ' '
             
             res += ']\n'
 
@@ -225,23 +226,76 @@ class MatrizRala:
 
         return res
 
-def GaussJordan( A, b ):
-    # Hallar solucion x para el sistema Ax = b
-    # Devolver error si el sistema no tiene solucion o tiene infinitas soluciones, con el mensaje apropiado
-    pass
+def GaussJordan(A, b):
+    m, n = A.shape
+    if b.shape[0] != m or b.shape[1] != 1:
+        raise ValueError("Las dimensiones de A y b no son compatibles")
+    
+    # Crear una matriz aumentada
+    A_aug = MatrizRala(m, n + 1)
+    for i in range(m):
+        for j in range(n):
+            A_aug[i, j] = A[i, j]
+        A_aug[i, n] = b[i, 0]
+    
+    # print("Matriz aumentada inicial:")
+    # print(A_aug)
+    
+    # Aplicar eliminación Gauss-Jordan
+    for i in range(m):
+        # Si el pivote es cero, buscar una fila para intercambiar
+        if A_aug[i, i] == 0:
+            swap_made = False
+            for k in range(i + 1, m):
+                if A_aug[k, i] != 0:
+                    # Intercambiar filas
+                    for j in range(n + 1):
+                        A_aug[i, j], A_aug[k, j] = A_aug[k, j], A_aug[i, j]
+                    swap_made = True
+                    break
+            if not swap_made:
+                raise ValueError("La matriz A es singular y no tiene solución única")
 
+        # Hacer el pivote igual a 1
+        pivote = A_aug[i, i]
+        for j in range(n + 1):
+            A_aug[i, j] /= pivote
 
-A = MatrizRala(2, 3)
-B = MatrizRala(3, 2)
+        # print(f"Después de hacer el pivote A[{i},{i}] igual a 1:")
+        # print(A_aug)
 
-A[0, 0] = 1
-A[0, 1] = 2
-A[1, 2] = 3
+        # Hacer ceros en la columna i
+        for k in range(m):
+            if k != i:
+                factor = A_aug[k, i]
+                for j in range(n + 1):
+                    A_aug[k, j] -= factor * A_aug[i, j]
+        
+        # print(f"Después de hacer ceros en la columna {i}:")
+        # print(A_aug)
+    
+    # Extraer la solución
+    x = MatrizRala(m, 1)
+    for i in range(m):
+        x[i, 0] = A_aug[i, n]
+    
+    # print("Solución final x:")
+    # print(x)
+    
+    return x
 
-B[0, 1] = 4
-B[1, 0] = 5
+# A = MatrizRala(3, 3)
+# B = MatrizRala(3, 2)
 
-C = A @ B
-print(A)
-print(B)
-print(C)
+# A[0, 0] = 1
+# A[0, 1] = 2
+# A[1, 2] = 3
+
+# B[0, 1] = 4
+# B[1, 0] = 5
+
+# C = GaussJordan(A, B)
+# # print(C)
+
+# print(A.filas[0])
+
