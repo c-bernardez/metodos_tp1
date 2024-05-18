@@ -1,6 +1,8 @@
 # IMPORTANTE: Para importar estas clases en otro archivo (que se encuentre en la misma carpeta), escribir:
 # from matricesRalas import MatrizRala, GaussJordan 
 import numpy as np
+import pandas as pd
+import time
 
 class ListaEnlazada:
     def __init__( self ):
@@ -162,26 +164,31 @@ class MatrizRala:
         # Esta funcion implementa el producto escalar-matriz -> k * A
         return self * k
 
-    def __add__( self, other ):
-        # Esta funcion implementa la suma de matrices -> A + B
+    def __add__(self, other):
+        # Esta función implementa la suma de matrices -> A + B
         if self.shape != other.shape:
             raise ValueError("Las matrices deben tener la misma forma para poder sumarlas")
-        
+
         resultado = MatrizRala(*self.shape)  # Crear una nueva matriz para almacenar el resultado
 
+        # Agregar todos los elementos de la matriz self
         for m, fila in self.filas.items():
-            # Iterar sobre los elementos de la fila
-            for n in range(self.shape[0]):
-                nodo_enA = self.__getitem__((m, n))
-                nodo_enB = other.__getitem__((m,n))
-                resultado.__setitem__((m,n), nodo_enA + nodo_enB)
+            nodo_actual = fila.raiz
+            while nodo_actual is not None:
+                n, valor = nodo_actual.valor
+                resultado[m, n] = valor
+                nodo_actual = nodo_actual.siguiente
 
-        #Iterar sobre las filas de la matriz other para agregar elementos que no están en la matriz self
+        # Agregar todos los elementos de la matriz other
         for m, fila in other.filas.items():
-            if m not in self.filas:
-                resultado.filas[m] = fila  # Copia la fila completa desde other a result 
-    
+            nodo_actual = fila.raiz
+            while nodo_actual is not None:
+                n, valor = nodo_actual.valor
+                resultado[m, n] += valor  # Si el elemento ya existe en resultado, se suma
+                nodo_actual = nodo_actual.siguiente
+
         return resultado
+
     
     def __sub__( self, other ):
         # Esta funcion implementa la resta de matrices (pueden usar suma y producto) -> A - B
@@ -190,35 +197,51 @@ class MatrizRala:
         resultado = self.__add__(negative_other)
         return resultado
     
-    def __matmul__( self, other ):
-        # Esta funcion implementa el producto matricial (notado en Python con el operador "@" ) -> A @ B
-        if self.shape[1] != other.shape[0]: # cant col A debe ser igual a cant fila B
+    def __matmul__(self, other):
+        if self.shape[1] != other.shape[0]:
             raise ValueError("Las dimensiones de las matrices no son compatibles para la multiplicación matricial")
 
-        # Crear una nueva instancia de la matriz resultante
-        resultado = MatrizRala(self.shape[0], other.shape[1])       
+        resultado = MatrizRala(self.shape[0], other.shape[1])
+        acumulados = {}
 
-        # Iterar sobre las filas de la matriz self
-        for i in range(self.shape[0]):
-            # Iterar sobre las columnas de la matriz other
-            for j in range(other.shape[1]):
-                # Calcular el valor del elemento (i, j) en la matriz resultante
-                valor = 0
-                for k in range(self.shape[1]): 
-                    valor += self.__getitem__((i, k)) * other.__getitem__((k, j))
-                    #print(i, j, self.__getitem__((i, k)) , other.__getitem__((k, j)))
+        for i, fila_a in self.filas.items():
+            nodo_a = fila_a.raiz
+            while nodo_a is not None:
+                k, valor_a = nodo_a.valor
+                if k in other.filas:
+                    fila_b = other.filas[k]
+                    nodo_b = fila_b.raiz
+                    while nodo_b is not None:
+                        j, valor_b = nodo_b.valor
+                        if (i, j) not in acumulados:
+                            acumulados[(i, j)] = 0
+                        acumulados[(i, j)] += valor_a * valor_b
+                        nodo_b = nodo_b.siguiente
+                nodo_a = nodo_a.siguiente
 
-                # Asignar el valor calculado al elemento (i, j) en la matriz resultante
-                resultado.__setitem__((i, j), valor)
+        for (i, j), valor in acumulados.items():
+            resultado[i, j] = valor
 
         return resultado
-        
+
+    def imprimir_fila(self, fila_idx):
+        if fila_idx in self.filas:
+            fila = self.filas[fila_idx]
+            nodo_actual = fila.raiz
+            while nodo_actual is not None:
+                columna, valor = nodo_actual.valor
+                print(f"WD[{fila_idx}, {columna}] = {valor}")
+                nodo_actual = nodo_actual.siguiente
+        else:
+            print(f"Fila {fila_idx} no tiene elementos no nulos.")
+            
     def __repr__( self ):
         res = 'MatrizRala([ \n'
         for i in range( self.shape[0] ):
             res += '    [ '
             for j in range( self.shape[1] ):
-                res += str(round(self[i,j],5)) + ' '
+                #res += str(round(self[i,j],5)) + ' '
+                res += str(self[i,j]) + ' '
             
             res += ']\n'
 
@@ -284,18 +307,207 @@ def GaussJordan(A, b):
     
     return x
 
-# A = MatrizRala(3, 3)
-# B = MatrizRala(3, 2)
 
-# A[0, 0] = 1
-# A[0, 1] = 2
-# A[1, 2] = 3
+#-------------------NOTEBOOK---------------------------------------
+start_outer = time.time()
 
-# B[0, 1] = 4
-# B[1, 0] = 5
+print("carga dataframes")
+df_citas = pd.read_csv('files/citas.csv')
+df_papers = pd.read_csv('files/papers.csv')
 
-# C = GaussJordan(A, B)
-# # print(C)
+print("creamos WD")
+size = df_papers.iloc[-1,0] + 1 #el i empieza en 0
+WD = MatrizRala(size, size)
+z = np.zeros(size)
+for index, row in df_citas.iterrows():
+    from_index = int(row['from'])
+    to_index = int(row['to'])
+    z[from_index] += 1
 
-# print(A.filas[0])
+for index, row in df_citas.iterrows():
+    from_index = int(row['from'])
+    to_index = int(row['to'])
+    WD[to_index, from_index] = 1 / z[from_index]
+
+
+print("inicializa parametros")
+#buscamos p_t+1 con el método iterativo
+d=0.85
+p_t0 = np.ones((size, 1)) * (1 / size)
+a = np.ones((size, 1)) * ((1 - d) / size)
+
+# Crear matrices ralas
+a_matriz_rala = MatrizRala(size, 1)
+for i in range(size):
+    a_matriz_rala[i, 0] = a[i, 0]
+
+p_t0_matriz_rala = MatrizRala(size, 1)
+for i in range(size):
+    p_t0_matriz_rala[i, 0] = p_t0[i, 0]
+
+diff = np.inf
+iteracion = 0
+diferencias = []
+matrix = (d * (WD)) #W@D
+
+print("loop")
+
+start_inner = time.time()
+
+while iteracion < 10 and diff > 1e-4:
+    print(iteracion)
+    p_t1 = a_matriz_rala + matrix @ p_t0_matriz_rala
+    diff = 0  
+    
+    # Calcular la diferencia en norma ||pt+1 - pt||
+    sum_diff = 0
+
+    for i in range(size):
+        diff_temp = p_t1[i, 0] - p_t0_matriz_rala[i, 0]
+        sum_diff += diff_temp ** 2
+    
+    diff = sum_diff ** 0.5
+       
+    diferencias.append(diff)
+    p_t0_matriz_rala = p_t1  
+    iteracion += 1
+
+end_outer = time.time()
+
+# print(p_t1)
+
+# print(f"La ejecución completa tardó {end_outer-start_outer} segundos, y la iteración {end_outer-start_inner}")
+
+# suma_pt1 = 0
+# for i in range(size):
+#     suma_pt1 += p_t1[i, 0]
+
+# print("La suma de todos los elementos de p_t1 es:", suma_pt1)
+
+#-----scores----
+print("calculamos top 10")
+impact_scores = [(i, p_t1[i, 0]) for i in range(size)]
+top_10_impact = sorted(impact_scores, key=lambda x: x[1], reverse=True)[:10]
+
+print("Top 10 papers con mayor impacto (por p_t1):")
+for paper, score in top_10_impact:
+    print(f"Paper ID: {paper}, Score: {score}")
+
+# Encontrar los 10 papers más citados
+citation_counts = df_citas['to'].value_counts()
+top_10_cited = citation_counts.head(10)
+
+print("Top 10 papers más citados:")
+for paper, count in top_10_cited.items():
+    impact_score = p_t1[paper, 0]
+    print(f"Paper ID: {paper}, Citas: {count}, Impacto: {impact_score}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+#----------------------------------------------
+# #cargamos los dataframes
+# print("cargamos los dataframes")
+# df_citas = pd.read_csv('files/citas.csv')
+# df_papers = pd.read_csv('files/papers.csv')
+
+# #inicializamos W y D a partir de la cantidad de filas - header de papers.csv
+# size = df_papers.iloc[-1,0] + 1 #el i empieza en 0
+# W = MatrizRala(size, size)
+# D = MatrizRala(size, size)
+
+# # print("creamos W y D")
+# # #creamos W a partir de citas csv
+# # for index, row in df_citas.iterrows():
+# #     from_index = int(row['from'])
+# #     to_index = int(row['to'])
+# #     W[to_index, from_index] = 1
+
+# # #creamos D a partir de citas csv
+# # z = np.zeros(size)
+# # for index, row in df_citas.iterrows():
+# #     from_index = int(row['from'])
+# #     z[from_index] += 1
+# #     D[from_index, from_index] = 1/z[from_index]
+
+# # print(W.shape, D.shape)
+# # print(W[251778,24])
+# # print(D[24,24])
+# WD = MatrizRala(size, size)
+# print("Creando WD directamente...")
+# z = np.zeros(size)
+# for index, row in df_citas.iterrows():
+#     from_index = int(row['from'])
+#     to_index = int(row['to'])
+#     z[from_index] += 1
+
+# for index, row in df_citas.iterrows():
+#     from_index = int(row['from'])
+#     to_index = int(row['to'])
+#     WD[to_index, from_index] = 1 / z[from_index]
+
+# # #chequeos 1/4 1/4 0
+# # print(WD[251778,24])
+# # print(WD[436906,24])
+# # print(WD[3,24])
+
+# print("inicializamos")
+# #buscamos p_t+1 con el método iterativo
+# d=0.85
+# p_t0 = np.ones((size, 1)) * (1 / size)
+# a = np.ones((size, 1)) * ((1 - d) / size)
+
+
+# # Crear matrices ralas
+# a_matriz_rala = MatrizRala(size, 1)
+# for i in range(size):
+#     a_matriz_rala[i, 0] = a[i, 0]
+
+# p_t0_matriz_rala = MatrizRala(size, 1)
+# for i in range(size):
+#     p_t0_matriz_rala[i, 0] = p_t0[i, 0]
+
+# diff = np.inf
+# iteracion = 0
+# diferencias = []
+# #diferencias_pstar = []
+
+# # print("multiplicacion")
+# # print((WD@p_t0_matriz_rala)+a_matriz_rala)
+
+# while iteracion < 3 and diff > 1e-4:
+#     print(iteracion)
+#     p_t1 = a_matriz_rala + (d * (W @ D)) @ p_t0_matriz_rala
+#     diff = 0  
+#     #diff_pstar = 0
+    
+#     # Calcular la diferencia en norma ||pt+1 - pt||
+#     sum_diff = 0
+#     #sum_diff_pstar = 0
+    
+#     for i in range(size):
+#         diff_temp = p_t1[i, 0] - p_t0_matriz_rala[i, 0]
+#         sum_diff += diff_temp ** 2
+        
+#         #diff_temp_pstar = p_t1[i, 0] - p_star[i, 0]
+#        # sum_diff_pstar += diff_temp_pstar ** 2
+    
+#     diff = sum_diff ** 0.5
+#     #diff_pstar = sum_diff_pstar ** 0.5
+       
+#     diferencias.append(diff)
+#    # diferencias_pstar.append(diff_pstar)
+#     p_t0_matriz_rala = p_t1  
+#     iteracion += 1
+
+# print(p_t1)
 
